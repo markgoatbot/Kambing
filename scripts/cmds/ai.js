@@ -1,13 +1,13 @@
 const axios = require('axios');
 
-const GPT_API_URL = 'https://sandipapi.onrender.com/gpt';
+const GPT_API_URL = 'https://akhiro-rest-api.onrender.com/api/akhiro';
 const PREFIXES = ['ai', '-ai', '!ai', '*ai'];
 
 module.exports = {
   config: {
     name: "ai",
     version: 1.0,
-    author: "Eldwin x Sandipapi", 
+    author: "Eldwin", 
     role: 0,
     longDescription: "AI",
     category: "ai",
@@ -58,6 +58,6 @@ function getCenteredHeader(header) {
 async function getGPTResponse(prompt) {
   // Implement caching logic here
 
-  const response = await axios.get(`${GPT_API_URL}?prompt=${encodeURIComponent(prompt)}`);
+  const response = await axios.get(`${GPT_API_URL}?q==${encodeURIComponent(prompt)}`);
   return response.data.answer;
           }
