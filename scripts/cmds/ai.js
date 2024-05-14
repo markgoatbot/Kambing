@@ -1,63 +1,66 @@
 const axios = require('axios');
 
-const GPT_API_URL = 'https://akhiro-rest-api.onrender.com/api/akhiro';
-const PREFIXES = ['ai', '-ai', '!ai', '*ai'];
+const Prefixes = [
+  '!ai',
+  'ai',
+  '?ai',
+];
 
 module.exports = {
   config: {
-    name: "ai",
-    version: 1.0,
-    author: "Eldwin", 
+    name: 'ai',
+    version: '2.5',
+    author: 'Eldwin', // pls do not change // credits to the api owner
     role: 0,
-    longDescription: "AI",
-    category: "ai",
+    category: 'ai',
+    shortDescription: {
+      en: 'Asks an AI for an answer.',
+    },
+    longDescription: {
+      en: 'Asks an AI for an answer based on the user prompt.',
+    },
     guide: {
-      en: "{pn} questions",
+      en: '{pn} [prompt]',
     },
   },
-  onStart: async function () {
-    // Initialization logic if needed
-  },
+  onStart: async function () {},
   onChat: async function ({ api, event, args, message }) {
     try {
-      const prefix = PREFIXES.find((p) => event.body && event.body.toLowerCase().startsWith(p));
+      const prefix = Prefixes.find((p) => event.body && event.body.toLowerCase().startsWith(p));
 
       if (!prefix) {
-        return; // Invalid prefix, ignore the command
+        return; 
       }
 
       const prompt = event.body.substring(prefix.length).trim();
 
-      if (!prompt) {
-        const defaultMessage = getCenteredHeader("𝗘𝗟 𝗕𝗢𝗧 🤖") + "\n\nKindly provide the question at your convenience and I shall strive to deliver an effective response. Your satisfaction is my top priority.";
-        await message.reply(defaultMessage);
+      if (prompt === '') {
+        await message.reply(
+          "Kindly provide the question at your convenience and I shall strive to deliver an effective response. Your satisfaction is my top priority."
+        );
         return;
       }
 
+
       await message.reply("Answering your question. Please wait a moment...");
 
-      const answer = await getGPTResponse(prompt);
+      const response = await axios.get(`https://akhiro-rest-api.onrender.com/api/akhiro?q=${encodeURIComponent(prompt)}`);
 
-      // Adding header to the answer
-      const answerWithHeader = getCenteredHeader("𝗘𝗟 𝗕𝗢𝗧 🤖") + "\n\n" + answer;
-      
-      await message.reply(answerWithHeader);
+      if (response.status !== 200 || !response.data) {
+        throw new Error('Invalid or missing response from API');
+      }
+
+      const messageText = response.data.content.trim();
+
+      await message.reply(messageText);
+
+      console.log('Sent answer as a reply to user');
     } catch (error) {
-      console.error("Error:", error.message);
-      // Additional error handling if needed
+      console.error(`Failed to get answer: ${error.message}`);
+      api.sendMessage(
+        `${error.message}.\n\nYou can try typing your question again or resending it, as there might be a bug from the server that's causing the problem. It might resolve the issue.`,
+        event.threadID
+      );
     }
-  }
+  },
 };
-
-function getCenteredHeader(header) {
-  const totalWidth = 32; // Adjust the total width as needed
-  const padding = Math.max(0, Math.floor((totalWidth - header.length) / 2));
-  return " ".repeat(padding) + header;
-}
-
-async function getGPTResponse(prompt) {
-  // Implement caching logic here
-
-  const response = await axios.get(`${GPT_API_URL}?q==${encodeURIComponent(prompt)}`);
-  return response.data.answer;
-          }
