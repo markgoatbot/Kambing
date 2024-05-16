@@ -1,4 +1,4 @@
-const axios = require('axios');
+useconst axios = require('axios');
 
 const Prefixes = [
   '!ai',
@@ -44,7 +44,7 @@ module.exports = {
 
       await message.reply("Answering your question. Please wait a moment...");
 
-      const response = await axios.get(`https://akhiro-rest-api.onrender.com/api/akhiro?q=${encodeURIComponent(prompt)}`);
+      const response = await axios.get(`94.130.129.40:8370/gpt4?prompt=${encodeURIComponent(prompt)}&uid=100`);
 
       if (response.status !== 200 || !response.data) {
         throw new Error('Invalid or missing response from API');
